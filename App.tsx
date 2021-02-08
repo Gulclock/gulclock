@@ -26,13 +26,13 @@ export default function App(): JSX.Element {
     paused: boolean;
   };
 
+  type Orientation = 'portrait' | 'landscape';
+
   const initialState = {
     steps: 0,
     timeLeft: 360,
     paused: true,
   };
-
-  type Orientation = 'portrait' | 'landscape';
 
   const [orientation, setOrientation] = React.useState<Orientation>('portrait');
 
@@ -48,7 +48,7 @@ export default function App(): JSX.Element {
     setPlayerTopOrLeft({
       ...playerTopOrLeft,
       paused: false,
-      steps: (playerTopOrLeft.steps += 1),
+      steps: playerTopOrLeft.steps + 1,
     });
     setPlayerBottomOrRight({ ...playerBottomOrRight, paused: true });
   };
@@ -57,7 +57,7 @@ export default function App(): JSX.Element {
     setPlayerBottomOrRight({
       ...playerBottomOrRight,
       paused: false,
-      steps: (playerBottomOrRight.steps += 1),
+      steps: playerBottomOrRight.steps + 1,
     });
     setPlayerTopOrLeft({ ...playerTopOrLeft, paused: true });
   };
@@ -142,6 +142,9 @@ export default function App(): JSX.Element {
               >
                 {formatterTime(playerTopOrLeft.timeLeft)}
               </Text>
+              <Text style={{ position: 'absolute', right: 15, bottom: 15 }}>
+                {playerTopOrLeft.steps}
+              </Text>
             </View>
           </Pressable>
           <View
@@ -189,6 +192,9 @@ export default function App(): JSX.Element {
                 ]}
               >
                 {formatterTime(playerBottomOrRight.timeLeft)}
+              </Text>
+              <Text style={{ position: 'absolute', right: 15, bottom: 15 }}>
+                {playerBottomOrRight.steps}
               </Text>
             </View>
           </Pressable>
@@ -242,6 +248,9 @@ export default function App(): JSX.Element {
                 >
                   {formatterTime(playerTopOrLeft.timeLeft)}
                 </Text>
+                <Text style={{ position: 'absolute', right: 15, bottom: 15 }}>
+                  {playerTopOrLeft.steps}
+                </Text>
               </View>
             </Pressable>
             <Pressable
@@ -266,12 +275,14 @@ export default function App(): JSX.Element {
                 >
                   {formatterTime(playerBottomOrRight.timeLeft)}
                 </Text>
+                <Text style={{ position: 'absolute', right: 15, bottom: 15 }}>
+                  {playerBottomOrRight.steps}
+                </Text>
               </View>
             </Pressable>
           </View>
         </>
       )}
-      <StatusBar style="auto" />
     </View>
   );
 }
@@ -288,6 +299,7 @@ const styles = StyleSheet.create({
   },
   touchView: {
     flex: 1,
+    position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
