@@ -74,7 +74,7 @@ export default function App(): JSX.Element {
     const id = setInterval(() => {
       setPlayerTopOrLeft({
         ...playerTopOrLeft,
-        timeLeft: (playerTopOrLeft.timeLeft -= 1),
+        timeLeft: playerTopOrLeft.timeLeft - 1,
       });
     }, 1000);
     if (playerTopOrLeft.paused) {
@@ -88,7 +88,7 @@ export default function App(): JSX.Element {
     const id = setInterval(() => {
       setPlayerBottomOrRight({
         ...playerBottomOrRight,
-        timeLeft: (playerBottomOrRight.timeLeft -= 1),
+        timeLeft: playerBottomOrRight.timeLeft - 1,
       });
     }, 1000);
     if (playerBottomOrRight.paused) {
