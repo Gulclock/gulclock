@@ -79,7 +79,14 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
       paused: false,
       steps: playerTopOrLeft.steps + 1,
     });
-    setPlayerBottomOrRight({ ...playerBottomOrRight, paused: true });
+    setPlayerBottomOrRight({
+      ...playerBottomOrRight,
+      paused: true,
+      timeLeft:
+        playerBottomOrRight.steps === 0
+          ? playerBottomOrRight.timeLeft
+          : playerBottomOrRight.timeLeft + playerBottomOrRight.increment,
+    });
   };
 
   const startPlayerTopOrLeft = () => {
@@ -88,7 +95,14 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
       paused: false,
       steps: playerBottomOrRight.steps + 1,
     });
-    setPlayerTopOrLeft({ ...playerTopOrLeft, paused: true });
+    setPlayerTopOrLeft({
+      ...playerTopOrLeft,
+      paused: true,
+      timeLeft:
+        playerTopOrLeft.steps === 0
+          ? playerTopOrLeft.timeLeft
+          : playerTopOrLeft.timeLeft + playerTopOrLeft.increment,
+    });
   };
 
   const reset = () => {

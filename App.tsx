@@ -6,11 +6,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Clock from './src/screens/Clock';
 import Settings from './src/screens/Settings';
 
-export type BaseOptions = {
-  timeLeft: number;
-  increment: number;
-};
-
 export type StackParamList = {
   Clock: undefined;
   Settings: undefined;
@@ -27,20 +22,26 @@ export type AllTypesOptions =
   | RapidOptions
   | ClassicalOptions;
 
+export type BaseOptions = {
+  timeLeft: number;
+  increment: number;
+  type: 'Bullet' | 'Blitz' | 'Rapid' | 'Classical';
+};
+
 const Stack = createStackNavigator();
 
 export const playMode = {
-  '1+0': { timeLeft: 60, increment: 0 },
-  '2+1': { timeLeft: 120, increment: 1 },
-  '3+0': { timeLeft: 180, increment: 0 },
-  '3+2': { timeLeft: 180, increment: 2 },
-  '5+0': { timeLeft: 300, increment: 0 },
-  '5+3': { timeLeft: 300, increment: 3 },
-  '10+0': { timeLeft: 600, increment: 0 },
-  '10+5': { timeLeft: 600, increment: 5 },
-  '15+10': { timeLeft: 900, increment: 10 },
-  '30+0': { timeLeft: 1800, increment: 0 },
-  '30+20': { timeLeft: 1800, increment: 20 },
+  '1+0': { timeLeft: 60, increment: 0, type: 'Bullet' },
+  '2+1': { timeLeft: 120, increment: 1, type: 'Bullet' },
+  '3+0': { timeLeft: 180, increment: 0, type: 'Blitz' },
+  '3+2': { timeLeft: 180, increment: 2, type: 'Blitz' },
+  '5+0': { timeLeft: 300, increment: 0, type: 'Blitz' },
+  '5+3': { timeLeft: 300, increment: 3, type: 'Blitz' },
+  '10+0': { timeLeft: 600, increment: 0, type: 'Rapid' },
+  '10+5': { timeLeft: 600, increment: 5, type: 'Rapid' },
+  '15+10': { timeLeft: 900, increment: 10, type: 'Rapid' },
+  '30+0': { timeLeft: 1800, increment: 0, type: 'Classical' },
+  '30+20': { timeLeft: 1800, increment: 20, type: 'Classical' },
 };
 
 export default function App(): JSX.Element {
@@ -63,7 +64,10 @@ export default function App(): JSX.Element {
           {props => (
             <Settings
               generatorOption={generatorOption}
-              playMode={Object.keys(playMode)}
+              playMode={Object.keys(playMode).map(key => ({
+                name: key,
+                type: playMode[key].type,
+              }))}
               mode={activeMode.mode}
               {...props}
             />

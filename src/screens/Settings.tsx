@@ -10,11 +10,23 @@ type SettingsScreenNavigationProp = StackNavigationProp<
   'Settings'
 >;
 
+type PlayMode = {
+  name: string;
+  type: string;
+};
+
 type Props = {
   navigation: SettingsScreenNavigationProp;
   generatorOption: (type: AllTypesOptions) => void;
-  playMode: string[];
+  playMode: PlayMode[];
   mode: string;
+};
+
+const iconsType = {
+  Bullet: 'bullet',
+  Rapid: 'rabbit',
+  Blitz: 'fire',
+  Classical: 'tortoise',
 };
 
 export default function Settings({
@@ -28,7 +40,7 @@ export default function Settings({
       <FlatList
         data={playMode}
         keyExtractor={(_, index) => `${index}`}
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <TouchableOpacity
             style={{
               flexDirection: 'row',
@@ -37,18 +49,23 @@ export default function Settings({
               borderBottomColor: '#ccc',
               borderBottomWidth: 0.5,
               padding: 15,
-              backgroundColor: mode === item ? '#ededed' : '#fff',
+              backgroundColor: mode === item.name ? '#ededed' : '#fff',
             }}
-            onPress={() => generatorOption(item)}
+            onPress={() => generatorOption(item.name)}
           >
             <MaterialCommunityIcons
-              name={index % 2 === 0 ? 'fire' : 'rabbit'}
+              name={iconsType[item.type]}
               size={24}
               color="orange"
+              style={{
+                transform: [
+                  { rotate: item.type === 'Bullet' ? '90deg' : '0deg' },
+                ],
+              }}
             />
-
-            <Text style={{ marginLeft: 10 }}>{item}</Text>
-            {mode === item && (
+            <Text style={{ marginHorizontal: 10 }}> {item.type} </Text>
+            <Text>{item.name}</Text>
+            {mode === item.name && (
               <MaterialCommunityIcons
                 name="check-bold"
                 size={24}
