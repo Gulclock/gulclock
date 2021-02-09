@@ -28,9 +28,11 @@ export type BaseOptions = {
   type: 'Bullet' | 'Blitz' | 'Rapid' | 'Classical';
 };
 
-const Stack = createStackNavigator();
+export type PlayMode = {
+  [k in AllTypesOptions]: BaseOptions;
+};
 
-export const playMode = {
+export const playMode: PlayMode = {
   '1+0': { timeLeft: 60, increment: 0, type: 'Bullet' },
   '2+1': { timeLeft: 120, increment: 1, type: 'Bullet' },
   '3+0': { timeLeft: 180, increment: 0, type: 'Blitz' },
@@ -42,6 +44,26 @@ export const playMode = {
   '15+10': { timeLeft: 900, increment: 10, type: 'Rapid' },
   '30+0': { timeLeft: 1800, increment: 0, type: 'Classical' },
   '30+20': { timeLeft: 1800, increment: 20, type: 'Classical' },
+};
+
+type TransformPlayMode = {
+  name: AllTypesOptions;
+  type: BaseOptions['type'];
+};
+
+export type ListPlayMode = TransformPlayMode[];
+
+const Stack = createStackNavigator();
+
+const listPlayMode = (arreglo: PlayMode): ListPlayMode => {
+  const transform: AllTypesOptions[] = Object.keys(arreglo) as Array<
+    keyof typeof arreglo
+  >;
+  const result = transform.map(item => ({
+    name: item,
+    type: playMode[item].type,
+  }));
+  return result;
 };
 
 export default function App(): JSX.Element {
@@ -64,10 +86,7 @@ export default function App(): JSX.Element {
           {props => (
             <Settings
               generatorOption={generatorOption}
-              playMode={Object.keys(playMode).map(key => ({
-                name: key,
-                type: playMode[key].type,
-              }))}
+              listplayMode={listPlayMode(playMode)}
               mode={activeMode.mode}
               {...props}
             />

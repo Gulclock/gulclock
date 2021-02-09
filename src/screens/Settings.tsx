@@ -3,22 +3,17 @@ import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import { AllTypesOptions, StackParamList } from '../../App';
+import { AllTypesOptions, ListPlayMode, StackParamList } from '../../App';
 
 type SettingsScreenNavigationProp = StackNavigationProp<
   StackParamList,
   'Settings'
 >;
 
-type PlayMode = {
-  name: string;
-  type: string;
-};
-
 type Props = {
   navigation: SettingsScreenNavigationProp;
   generatorOption: (type: AllTypesOptions) => void;
-  playMode: PlayMode[];
+  listplayMode: ListPlayMode;
   mode: string;
 };
 
@@ -32,13 +27,13 @@ const iconsType = {
 export default function Settings({
   navigation,
   generatorOption,
-  playMode,
+  listplayMode,
   mode,
 }: Props): JSX.Element {
   return (
     <View>
       <FlatList
-        data={playMode}
+        data={listplayMode}
         keyExtractor={(_, index) => `${index}`}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -56,7 +51,7 @@ export default function Settings({
             <MaterialCommunityIcons
               name={iconsType[item.type]}
               size={24}
-              color="orange"
+              color="darkblue"
               style={{
                 transform: [
                   { rotate: item.type === 'Bullet' ? '90deg' : '0deg' },
@@ -69,7 +64,7 @@ export default function Settings({
               <MaterialCommunityIcons
                 name="check-bold"
                 size={24}
-                color="green"
+                color="darkblue"
                 style={{ marginLeft: 'auto' }}
               />
             )}
