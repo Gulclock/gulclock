@@ -61,7 +61,7 @@ const listPlayMode = (arreglo: PlayMode): ListPlayMode => {
   >;
   const result = transform.map(item => ({
     name: item,
-    type: playMode[item].type,
+    type: arreglo[item].type,
   }));
   return result;
 };
