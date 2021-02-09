@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/style-prop-object */
 /* eslint-disable @typescript-eslint/no-use-before-define */
@@ -70,6 +71,8 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
     initialState,
   );
 
+  const [gameOver, setGameOver] = React.useState<boolean>(false);
+
   const startplayerBottomOrRight = () => {
     setPlayerTopOrLeft({
       ...playerTopOrLeft,
@@ -91,6 +94,7 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
   const reset = () => {
     setPlayerBottomOrRight(initialState);
     setPlayerTopOrLeft(initialState);
+    setGameOver(false);
   };
 
   const formatterTime = (time: number) =>
@@ -103,6 +107,10 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
         timeLeft: playerTopOrLeft.timeLeft - 1,
       });
     }, 1000);
+    if (playerTopOrLeft.timeLeft === 0) {
+      clearInterval(id);
+      setGameOver(true);
+    }
     if (playerTopOrLeft.paused) {
       clearInterval(id);
     }
@@ -117,6 +125,10 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
         timeLeft: playerBottomOrRight.timeLeft - 1,
       });
     }, 1000);
+    if (playerBottomOrRight.timeLeft === 0) {
+      clearInterval(id);
+      setGameOver(true);
+    }
     if (playerBottomOrRight.paused) {
       clearInterval(id);
     }
@@ -154,6 +166,7 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
         {orientation === 'portrait' ? (
           <>
             <Pressable
+              disabled={gameOver}
               onPressIn={startPlayerTopOrLeft}
               style={{ flex: 1, width: '100%' }}
             >
@@ -162,9 +175,12 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
                   styles.touchView,
                   {
                     transform: [{ rotate: '180deg' }],
-                    backgroundColor: playerTopOrLeft.paused
-                      ? '#c0c0c0'
-                      : 'darkorange',
+                    backgroundColor:
+                      playerTopOrLeft.timeLeft === 0
+                        ? 'red'
+                        : playerTopOrLeft.paused
+                        ? '#c0c0c0'
+                        : 'darkorange',
                   },
                 ]}
               >
@@ -208,6 +224,7 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
               </TouchableOpacity>
             </View>
             <Pressable
+              disabled={gameOver}
               onPressIn={startplayerBottomOrRight}
               style={{ flex: 1, width: '100%' }}
             >
@@ -215,9 +232,12 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
                 style={[
                   styles.touchView,
                   {
-                    backgroundColor: playerBottomOrRight.paused
-                      ? '#c0c0c0'
-                      : 'darkorange',
+                    backgroundColor:
+                      playerBottomOrRight.timeLeft === 0
+                        ? 'red'
+                        : playerBottomOrRight.paused
+                        ? '#c0c0c0'
+                        : 'darkorange',
                   },
                 ]}
               >
@@ -265,6 +285,7 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
             </View>
             <View style={{ flexDirection: 'row', flex: 1 }}>
               <Pressable
+                disabled={gameOver}
                 onPressIn={startPlayerTopOrLeft}
                 style={{ flex: 1, width: '100%' }}
               >
@@ -272,9 +293,12 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
                   style={[
                     styles.touchView,
                     {
-                      backgroundColor: playerTopOrLeft.paused
-                        ? '#c0c0c0'
-                        : 'darkorange',
+                      backgroundColor:
+                        playerTopOrLeft.timeLeft === 0
+                          ? 'red'
+                          : playerTopOrLeft.paused
+                          ? '#c0c0c0'
+                          : 'darkorange',
                     },
                   ]}
                 >
@@ -292,6 +316,7 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
                 </View>
               </Pressable>
               <Pressable
+                disabled={gameOver}
                 onPressIn={startplayerBottomOrRight}
                 style={{ flex: 1, width: '100%' }}
               >
@@ -299,9 +324,12 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
                   style={[
                     styles.touchView,
                     {
-                      backgroundColor: playerBottomOrRight.paused
-                        ? '#c0c0c0'
-                        : 'darkorange',
+                      backgroundColor:
+                        playerBottomOrRight.timeLeft === 0
+                          ? 'red'
+                          : playerBottomOrRight.paused
+                          ? '#c0c0c0'
+                          : 'darkorange',
                     },
                   ]}
                 >
