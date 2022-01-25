@@ -1,6 +1,6 @@
-/* eslint-disable no-nested-ternary */
-/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable prettier/prettier */
 /* eslint-disable react/style-prop-object */
+/* eslint-disable no-nested-ternary */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable camelcase */
 import React from 'react';
@@ -21,13 +21,13 @@ import { StatusBar } from 'expo-status-bar';
 
 import { BaseOptions, StackParamList } from '../../App';
 
-export const usePrevious = (value: BaseOptions | undefined) => {
-  const ref = React.useRef();
+export function usePrevious(value?: BaseOptions): BaseOptions | undefined {
+  const ref = React.useRef<BaseOptions | undefined>();
   React.useEffect(() => {
     ref.current = value;
   });
   return ref.current;
-};
+}
 
 type ClockScreenNavigationProp = StackNavigationProp<StackParamList, 'Clock'>;
 
@@ -64,16 +64,17 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
   const [orientation, setOrientation] = React.useState<Orientation>('portrait');
 
   const [playerTopOrLeft, setPlayerTopOrLeft] = React.useState<Player>(
-    initialState,
+    initialState
   );
 
   const [playerBottomOrRight, setPlayerBottomOrRight] = React.useState<Player>(
-    initialState,
+    initialState
   );
 
   const [gameOver, setGameOver] = React.useState<boolean>(false);
 
   const startplayerBottomOrRight = () => {
+    if (!playerTopOrLeft.paused && playerTopOrLeft.steps > 0) return;
     setPlayerTopOrLeft({
       ...playerTopOrLeft,
       paused: false,
@@ -90,6 +91,7 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
   };
 
   const startPlayerTopOrLeft = () => {
+    if (!playerBottomOrRight.paused && playerBottomOrRight.steps > 0) return;
     setPlayerBottomOrRight({
       ...playerBottomOrRight,
       paused: false,
@@ -154,12 +156,13 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
     if (activeModePrevius !== activeMode) {
       reset();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeMode]);
 
   React.useEffect(() => {
     const listener = (info: ScreenOrientation.OrientationChangeEvent): void => {
       setOrientation(
-        info.orientationInfo.orientation === 1 ? 'portrait' : 'landscape',
+        info.orientationInfo.orientation === 1 ? 'portrait' : 'landscape'
       );
     };
 
