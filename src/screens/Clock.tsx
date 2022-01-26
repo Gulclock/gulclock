@@ -3,7 +3,7 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable camelcase */
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -18,6 +18,7 @@ import { useFonts, Inter_700Bold } from '@expo-google-fonts/inter';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
+import { DeviceMotion } from 'expo-sensors';
 
 import { BaseOptions, StackParamList } from '../../App';
 
@@ -45,6 +46,7 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
   };
 
   type Orientation = 'portrait' | 'landscape';
+  type PlayerSide = 'left' | 'right' | 'idle';
 
   const [fontsLoaded] = useFonts({
     Inter_700Bold,
@@ -62,6 +64,7 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
   };
 
   const [orientation, setOrientation] = React.useState<Orientation>('portrait');
+  const [player, setPlayer] = React.useState<PlayerSide>('idle');
 
   const [playerTopOrLeft, setPlayerTopOrLeft] = React.useState<Player>(
     initialState
@@ -73,7 +76,7 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
 
   const [gameOver, setGameOver] = React.useState<boolean>(false);
 
-  const startplayerBottomOrRight = () => {
+  const startplayerBottomOrRight = useCallback(() => {
     if (!playerTopOrLeft.paused && playerTopOrLeft.steps > 0) return;
     setPlayerTopOrLeft({
       ...playerTopOrLeft,
@@ -88,9 +91,9 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
           ? playerBottomOrRight.timeLeft
           : playerBottomOrRight.timeLeft + playerBottomOrRight.increment,
     });
-  };
+  }, [playerBottomOrRight, playerTopOrLeft]);
 
-  const startPlayerTopOrLeft = () => {
+  const startPlayerTopOrLeft = useCallback(() => {
     if (!playerBottomOrRight.paused && playerBottomOrRight.steps > 0) return;
     setPlayerBottomOrRight({
       ...playerBottomOrRight,
@@ -105,7 +108,7 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
           ? playerTopOrLeft.timeLeft
           : playerTopOrLeft.timeLeft + playerTopOrLeft.increment,
     });
-  };
+  }, [playerBottomOrRight, playerTopOrLeft]);
 
   const reset = () => {
     setPlayerBottomOrRight(initialState);
@@ -158,6 +161,28 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeMode]);
+
+  React.useEffect(() => {
+    const listener = DeviceMotion.addListener(
+      ({ accelerationIncludingGravity: { y } }) => {
+        const gravityY =
+          Math.round(y) > 0 ? 'right' : Math.round(y) < -1 ? 'left' : 'idle';
+
+        setPlayer((prevState) => {
+          if (prevState !== gravityY) return gravityY;
+          return prevState;
+        });
+      }
+    );
+    return () => listener.remove();
+  }, []);
+
+  React.useEffect(() => {
+    if (orientation === 'landscape') {
+      if (player === 'left') startplayerBottomOrRight();
+      if (player === 'right') startPlayerTopOrLeft();
+    }
+  }, [orientation, player, startPlayerTopOrLeft, startplayerBottomOrRight]);
 
   React.useEffect(() => {
     const listener = (info: ScreenOrientation.OrientationChangeEvent): void => {
