@@ -164,12 +164,20 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
 
   React.useEffect(() => {
     const listener = DeviceMotion.addListener(
-      ({ accelerationIncludingGravity: { y } }) => {
-        const gravityY =
-          Math.round(y) > 0 ? 'right' : Math.round(y) < -1 ? 'left' : 'idle';
+      ({ rotation }) => {
+        // get actual rotation in degrees
+        const beta = Object.is(rotation.beta, undefined) ? 0 : rotation.beta;
+        const rot = beta * (180 / Math.PI);
 
+        // minimum rotation degrees to change state
+        const deltaDegree = 1;
+
+        const state =
+          rot > deltaDegree ? 'right' : rot < -deltaDegree ? 'left' : 'idle';
+
+        // alert(state);
         setPlayer((prevState) => {
-          if (prevState !== gravityY) return gravityY;
+          if (prevState !== state) return state;
           return prevState;
         });
       }
@@ -221,8 +229,8 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
                       playerTopOrLeft.timeLeft === 0
                         ? 'red'
                         : playerTopOrLeft.paused
-                        ? '#c0c0c0'
-                        : 'darkorange',
+                          ? '#c0c0c0'
+                          : 'darkorange',
                   },
                 ]}
               >
@@ -278,8 +286,8 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
                       playerBottomOrRight.timeLeft === 0
                         ? 'red'
                         : playerBottomOrRight.paused
-                        ? '#c0c0c0'
-                        : 'darkorange',
+                          ? '#c0c0c0'
+                          : 'darkorange',
                   },
                 ]}
               >
@@ -339,8 +347,8 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
                         playerTopOrLeft.timeLeft === 0
                           ? 'red'
                           : playerTopOrLeft.paused
-                          ? '#c0c0c0'
-                          : 'darkorange',
+                            ? '#c0c0c0'
+                            : 'darkorange',
                     },
                   ]}
                 >
@@ -370,8 +378,8 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
                         playerBottomOrRight.timeLeft === 0
                           ? 'red'
                           : playerBottomOrRight.paused
-                          ? '#c0c0c0'
-                          : 'darkorange',
+                            ? '#c0c0c0'
+                            : 'darkorange',
                     },
                   ]}
                 >
