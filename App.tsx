@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
+import { useKeepAwake } from 'expo-keep-awake';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
@@ -67,6 +68,7 @@ const listPlayMode = (arreglo: PlayMode): ListPlayMode => {
 };
 
 export default function App(): JSX.Element {
+  useKeepAwake();
   const [activeMode, setActiveMode] = React.useState({
     playmode: playMode['3+2'],
     mode: '3+2',

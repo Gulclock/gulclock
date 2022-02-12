@@ -22,6 +22,7 @@ import { DeviceMotion } from 'expo-sensors';
 
 import { BaseOptions, StackParamList } from '../../App';
 
+// DeviceMotion.setUpdateInterval(100);
 export function usePrevious(value?: BaseOptions): BaseOptions | undefined {
   const ref = React.useRef<BaseOptions | undefined>();
   React.useEffect(() => {
@@ -171,11 +172,9 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
 
         // minimum rotation degrees to change state
         const deltaDegree = 1;
-
         const state =
-          rot > deltaDegree ? 'right' : rot < -deltaDegree ? 'left' : 'idle';
+          rot > deltaDegree ? 'left' : rot < -deltaDegree ? 'right' : 'idle';
 
-        // alert(state);
         setPlayer((prevState) => {
           if (prevState !== state) return state;
           return prevState;
