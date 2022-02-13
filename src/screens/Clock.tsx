@@ -22,7 +22,10 @@ import { DeviceMotion } from 'expo-sensors';
 
 import { BaseOptions, StackParamList } from '../../App';
 
-// DeviceMotion.setUpdateInterval(100);
+// Time accuracy in ms
+const deltaTime = 100;
+DeviceMotion.setUpdateInterval(deltaTime);
+
 export function usePrevious(value?: BaseOptions): BaseOptions | undefined {
   const ref = React.useRef<BaseOptions | undefined>();
   React.useEffect(() => {
@@ -118,15 +121,15 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
   };
 
   const formatterTime = (time: number) =>
-    new Date(time * 1000).toISOString().substr(14, 5);
+    new Date(time).toISOString().substr(14, 5);
 
   React.useEffect(() => {
     const id = setInterval(() => {
       setPlayerTopOrLeft({
         ...playerTopOrLeft,
-        timeLeft: playerTopOrLeft.timeLeft - 1,
+        timeLeft: playerTopOrLeft.timeLeft - deltaTime,
       });
-    }, 1000);
+    }, deltaTime);
     if (playerTopOrLeft.timeLeft === 0) {
       clearInterval(id);
       setGameOver(true);
@@ -142,9 +145,9 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
     const id = setInterval(() => {
       setPlayerBottomOrRight({
         ...playerBottomOrRight,
-        timeLeft: playerBottomOrRight.timeLeft - 1,
+        timeLeft: playerBottomOrRight.timeLeft - deltaTime,
       });
-    }, 1000);
+    }, deltaTime);
     if (playerBottomOrRight.timeLeft === 0) {
       clearInterval(id);
       setGameOver(true);

@@ -1,4 +1,4 @@
-# GULCLOCK
+# mutesi-cc
 
 This project is created with [expo](https://expo.io/) 
 
