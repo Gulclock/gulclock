@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
+import { useKeepAwake } from 'expo-keep-awake';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
@@ -32,18 +33,33 @@ export type PlayMode = {
   [k in AllTypesOptions]: BaseOptions;
 };
 
+// export const playMode: PlayMode = {
+//   '1+0': { timeLeft: 60, increment: 0, type: 'Bullet' },
+//   '2+1': { timeLeft: 120, increment: 1, type: 'Bullet' },
+//   '3+0': { timeLeft: 180, increment: 0, type: 'Blitz' },
+//   '3+2': { timeLeft: 180, increment: 2, type: 'Blitz' },
+//   '5+0': { timeLeft: 300, increment: 0, type: 'Blitz' },
+//   '5+3': { timeLeft: 300, increment: 3, type: 'Blitz' },
+//   '10+0': { timeLeft: 600, increment: 0, type: 'Rapid' },
+//   '10+5': { timeLeft: 600, increment: 5, type: 'Rapid' },
+//   '15+10': { timeLeft: 900, increment: 10, type: 'Rapid' },
+//   '30+0': { timeLeft: 1800, increment: 0, type: 'Classical' },
+//   '30+20': { timeLeft: 1800, increment: 20, type: 'Classical' },
+// };
+
+// Time in ms
 export const playMode: PlayMode = {
-  '1+0': { timeLeft: 60, increment: 0, type: 'Bullet' },
-  '2+1': { timeLeft: 120, increment: 1, type: 'Bullet' },
-  '3+0': { timeLeft: 180, increment: 0, type: 'Blitz' },
-  '3+2': { timeLeft: 180, increment: 2, type: 'Blitz' },
-  '5+0': { timeLeft: 300, increment: 0, type: 'Blitz' },
-  '5+3': { timeLeft: 300, increment: 3, type: 'Blitz' },
-  '10+0': { timeLeft: 600, increment: 0, type: 'Rapid' },
-  '10+5': { timeLeft: 600, increment: 5, type: 'Rapid' },
-  '15+10': { timeLeft: 900, increment: 10, type: 'Rapid' },
-  '30+0': { timeLeft: 1800, increment: 0, type: 'Classical' },
-  '30+20': { timeLeft: 1800, increment: 20, type: 'Classical' },
+  '1+0': { timeLeft: 60000, increment: 0, type: 'Bullet' },
+  '2+1': { timeLeft: 120000, increment: 1000, type: 'Bullet' },
+  '3+0': { timeLeft: 180000, increment: 0, type: 'Blitz' },
+  '3+2': { timeLeft: 180000, increment: 2000, type: 'Blitz' },
+  '5+0': { timeLeft: 300000, increment: 0, type: 'Blitz' },
+  '5+3': { timeLeft: 300000, increment: 3000, type: 'Blitz' },
+  '10+0': { timeLeft: 600000, increment: 0, type: 'Rapid' },
+  '10+5': { timeLeft: 600000, increment: 5000, type: 'Rapid' },
+  '15+10': { timeLeft: 900000, increment: 10000, type: 'Rapid' },
+  '30+0': { timeLeft: 1800000, increment: 0, type: 'Classical' },
+  '30+20': { timeLeft: 1800000, increment: 20000, type: 'Classical' },
 };
 
 type TransformPlayMode = {
@@ -67,6 +83,7 @@ const listPlayMode = (arreglo: PlayMode): ListPlayMode => {
 };
 
 export default function App(): JSX.Element {
+  useKeepAwake();
   const [activeMode, setActiveMode] = React.useState({
     playmode: playMode['3+2'],
     mode: '3+2',
