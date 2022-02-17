@@ -22,9 +22,22 @@ import { DeviceMotion } from 'expo-sensors';
 
 import { BaseOptions, StackParamList } from '../../App';
 
-// Time accuracy in ms
-const deltaTime = 100;
-DeviceMotion.setUpdateInterval(deltaTime);
+// Time resolution in ms
+const timeResolution = 100;
+
+// Min delta angle required to change the player state
+const minDeltaAngle = 1;
+
+DeviceMotion.setUpdateInterval(timeResolution);
+
+let topOrLeftStartTime = 0;
+let bottomOrRightStartTime = 0;
+
+let topOrLeftCorrectionTime = 0;
+let bottomOrRightCorrectionTime = 0;
+
+// Last rotation angle
+let lastAngle = 0;
 
 export function usePrevious(value?: BaseOptions): BaseOptions | undefined {
   const ref = React.useRef<BaseOptions | undefined>();
@@ -87,13 +100,15 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
       paused: false,
       steps: playerTopOrLeft.steps + 1,
     });
+    const increment =
+      playerBottomOrRight.timeLeft < timeResolution ? 0 : playerBottomOrRight.increment;
     setPlayerBottomOrRight({
       ...playerBottomOrRight,
       paused: true,
       timeLeft:
         playerBottomOrRight.steps === 0
           ? playerBottomOrRight.timeLeft
-          : playerBottomOrRight.timeLeft + playerBottomOrRight.increment,
+          : playerBottomOrRight.timeLeft + increment,
     });
   }, [playerBottomOrRight, playerTopOrLeft]);
 
@@ -104,13 +119,15 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
       paused: false,
       steps: playerBottomOrRight.steps + 1,
     });
+    const increment =
+      playerTopOrLeft.timeLeft < timeResolution ? 0 : playerTopOrLeft.increment;
     setPlayerTopOrLeft({
       ...playerTopOrLeft,
       paused: true,
       timeLeft:
         playerTopOrLeft.steps === 0
           ? playerTopOrLeft.timeLeft
-          : playerTopOrLeft.timeLeft + playerTopOrLeft.increment,
+          : playerTopOrLeft.timeLeft + increment,
     });
   }, [playerBottomOrRight, playerTopOrLeft]);
 
@@ -121,15 +138,20 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
   };
 
   const formatterTime = (time: number) =>
-    new Date(time).toISOString().substr(14, 5);
+    new Date(time).toISOString().substr(14, 7);
 
   React.useEffect(() => {
+    topOrLeftStartTime = new Date().getTime();
     const id = setInterval(() => {
+      const delta = timeResolution + topOrLeftCorrectionTime;
+      const timeLeft = playerTopOrLeft.timeLeft - delta;
       setPlayerTopOrLeft({
         ...playerTopOrLeft,
-        timeLeft: playerTopOrLeft.timeLeft - deltaTime,
+        timeLeft: timeLeft < timeResolution ? 0 : timeLeft,
       });
-    }, deltaTime);
+      const end = new Date().getTime() - topOrLeftStartTime;
+      topOrLeftCorrectionTime = end - timeResolution;
+    }, timeResolution);
     if (playerTopOrLeft.timeLeft === 0) {
       clearInterval(id);
       setGameOver(true);
@@ -142,12 +164,17 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
   }, [playerTopOrLeft, playerTopOrLeft.paused]);
 
   React.useEffect(() => {
+    bottomOrRightStartTime = new Date().getTime();
     const id = setInterval(() => {
+      const delta = timeResolution + bottomOrRightCorrectionTime;
+      const timeLeft = playerBottomOrRight.timeLeft - delta;
       setPlayerBottomOrRight({
         ...playerBottomOrRight,
-        timeLeft: playerBottomOrRight.timeLeft - deltaTime,
+        timeLeft: timeLeft < timeResolution ? 0 : timeLeft,
       });
-    }, deltaTime);
+      const end = new Date().getTime() - bottomOrRightStartTime;
+      bottomOrRightCorrectionTime = end - timeResolution;
+    }, timeResolution);
     if (playerBottomOrRight.timeLeft === 0) {
       clearInterval(id);
       setGameOver(true);
@@ -171,17 +198,18 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
       ({ rotation }) => {
         // get actual rotation in degrees
         const beta = Object.is(rotation.beta, undefined) ? 0 : rotation.beta;
-        const rot = beta * (180 / Math.PI);
+        const rotAngle = beta * (180 / Math.PI);
 
-        // minimum rotation degrees to change state
-        const deltaDegree = 1;
-        const state =
-          rot > deltaDegree ? 'left' : rot < -deltaDegree ? 'right' : 'idle';
-
-        setPlayer((prevState) => {
-          if (prevState !== state) return state;
-          return prevState;
-        });
+        const deltaAngle = rotAngle - lastAngle;
+        if (Math.abs(rotAngle - lastAngle) > minDeltaAngle) {
+          const state =
+            deltaAngle > 0 ? 'left' : deltaAngle < 0 ? 'right' : 'idle';
+          setPlayer((prevState) => {
+            if (prevState !== state) return state;
+            return prevState;
+          });
+        };
+        lastAngle = rotAngle;
       }
     );
     return () => listener.remove();
@@ -239,7 +267,11 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
                 <Text
                   style={[
                     styles.text,
-                    { color: playerTopOrLeft.paused ? '#000' : '#c0c0c0' },
+                    {
+                      color: playerTopOrLeft.paused ? '#000' : '#c0c0c0',
+                      position: 'absolute',
+                      left: 14
+                    },
                   ]}
                 >
                   {formatterTime(playerTopOrLeft.timeLeft)}
@@ -296,7 +328,11 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
                 <Text
                   style={[
                     styles.text,
-                    { color: playerBottomOrRight.paused ? '#000' : '#c0c0c0' },
+                    {
+                      color: playerBottomOrRight.paused ? '#000' : '#c0c0c0',
+                      position: 'absolute',
+                      left: 14
+                    },
                   ]}
                 >
                   {formatterTime(playerBottomOrRight.timeLeft)}
@@ -357,7 +393,11 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
                   <Text
                     style={[
                       styles.text,
-                      { color: playerTopOrLeft.paused ? '#000' : '#c0c0c0' },
+                      {
+                        color: playerTopOrLeft.paused ? '#000' : '#c0c0c0',
+                        position: 'absolute',
+                        left: 14
+                      },
                     ]}
                   >
                     {formatterTime(playerTopOrLeft.timeLeft)}
@@ -390,6 +430,8 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
                       styles.text,
                       {
                         color: playerBottomOrRight.paused ? '#000' : '#c0c0c0',
+                        position: 'absolute',
+                        left: 14
                       },
                     ]}
                   >
