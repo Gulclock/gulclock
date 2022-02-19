@@ -15,7 +15,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import AppLoading from 'expo-app-loading';
 import { useFonts, Inter_700Bold } from '@expo-google-fonts/inter';
-import * as ScreenOrientation from 'expo-screen-orientation';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
 import { DeviceMotion } from 'expo-sensors';
@@ -62,8 +61,8 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
     increment: number;
   };
 
-  type Orientation = 'portrait' | 'landscape';
   type PlayerSide = 'left' | 'right' | 'idle';
+  type StateGame = 'play' | 'pause' | 'idle';
 
   const [fontsLoaded] = useFonts({
     Inter_700Bold,
@@ -80,7 +79,6 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
     paused: true,
   };
 
-  const [orientation, setOrientation] = React.useState<Orientation>('portrait');
   const [player, setPlayer] = React.useState<PlayerSide>('idle');
 
   const [playerTopOrLeft, setPlayerTopOrLeft] = React.useState<Player>(
@@ -92,6 +90,7 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
   );
 
   const [gameOver, setGameOver] = React.useState<boolean>(false);
+  const [ready, setReady] = React.useState<StateGame>('idle');
 
   const startplayerBottomOrRight = useCallback(() => {
     if (!playerTopOrLeft.paused && playerTopOrLeft.steps > 0) return;
@@ -135,10 +134,14 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
     setPlayerBottomOrRight(initialState);
     setPlayerTopOrLeft(initialState);
     setGameOver(false);
+    setReady('idle');
   };
 
-  const formatterTime = (time: number) =>
-    new Date(time).toISOString().substr(14, 7);
+  const formatterTime = (time: number) => {
+    const size = time < 60000 ? 7 : 5;
+    return new Date(time).toISOString().substr(14, size);
+  }
+
 
   React.useEffect(() => {
     topOrLeftStartTime = new Date().getTime();
@@ -156,12 +159,12 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
       clearInterval(id);
       setGameOver(true);
     }
-    if (playerTopOrLeft.paused) {
+    if (playerTopOrLeft.paused || ready !== 'play' || gameOver) {
       clearInterval(id);
     }
 
     return () => clearInterval(id);
-  }, [playerTopOrLeft, playerTopOrLeft.paused]);
+  }, [playerTopOrLeft, playerTopOrLeft.paused, ready, gameOver]);
 
   React.useEffect(() => {
     bottomOrRightStartTime = new Date().getTime();
@@ -179,12 +182,12 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
       clearInterval(id);
       setGameOver(true);
     }
-    if (playerBottomOrRight.paused) {
+    if (playerBottomOrRight.paused || ready !== 'play' || gameOver) {
       clearInterval(id);
     }
 
     return () => clearInterval(id);
-  }, [playerBottomOrRight, playerBottomOrRight.paused]);
+  }, [playerBottomOrRight, playerBottomOrRight.paused, ready, gameOver]);
 
   React.useEffect(() => {
     if (activeModePrevius !== activeMode) {
@@ -197,7 +200,7 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
     const listener = DeviceMotion.addListener(
       ({ rotation }) => {
         // get actual rotation in degrees
-        const beta = Object.is(rotation.beta, undefined) ? 0 : rotation.beta;
+        const beta = rotation?.beta || 0;
         const rotAngle = beta * (180 / Math.PI);
 
         const deltaAngle = rotAngle - lastAngle;
@@ -215,238 +218,122 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
     return () => listener.remove();
   }, []);
 
+
   React.useEffect(() => {
-    if (orientation === 'landscape') {
+    if (ready === 'play' && !gameOver) {
       if (player === 'left') startplayerBottomOrRight();
       if (player === 'right') startPlayerTopOrLeft();
     }
-  }, [orientation, player, startPlayerTopOrLeft, startplayerBottomOrRight]);
+  }, [player, startPlayerTopOrLeft, startplayerBottomOrRight, ready, gameOver]);
 
-  React.useEffect(() => {
-    const listener = (info: ScreenOrientation.OrientationChangeEvent): void => {
-      setOrientation(
-        info.orientationInfo.orientation === 1 ? 'portrait' : 'landscape'
-      );
-    };
-
-    ScreenOrientation.addOrientationChangeListener(listener);
-    return () => {
-      ScreenOrientation.removeOrientationChangeListeners();
-    };
-  }, []);
 
   if (!fontsLoaded) {
     return <AppLoading />;
   }
 
+  const backgroundColor = playerTopOrLeft.timeLeft === 0
+    ? 'red'
+    : playerTopOrLeft.paused
+      ? '#c0c0c0'
+      : 'darkorange';
+
   return (
     <>
       <SafeAreaView />
       <View style={styles.container}>
-        {orientation === 'portrait' ? (
-          <>
-            <Pressable
-              disabled={gameOver}
-              onPressIn={startPlayerTopOrLeft}
-              style={{ flex: 1, width: '100%' }}
+        <View style={{ flexDirection: 'row', flex: 1 }}>
+          <View
+            style={[
+              styles.touchView, { backgroundColor },
+            ]}
+          >
+            <Text
+              style={[
+                styles.text,
+                {
+                  color: playerTopOrLeft.paused ? '#000' : '#c0c0c0',
+                },
+              ]}
             >
-              <View
-                style={[
-                  styles.touchView,
-                  {
-                    transform: [{ rotate: '180deg' }],
-                    backgroundColor:
-                      playerTopOrLeft.timeLeft === 0
-                        ? 'red'
-                        : playerTopOrLeft.paused
-                          ? '#c0c0c0'
-                          : 'darkorange',
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.text,
-                    {
-                      color: playerTopOrLeft.paused ? '#000' : '#c0c0c0',
-                      position: 'absolute',
-                      left: 14
-                    },
-                  ]}
-                >
-                  {formatterTime(playerTopOrLeft.timeLeft)}
-                </Text>
-                <Text style={{ position: 'absolute', right: 15, bottom: 15 }}>
-                  {playerTopOrLeft.steps}
-                </Text>
-              </View>
-            </Pressable>
-            <View
-              style={{
-                flexDirection: 'row',
-                padding: 25,
-                backgroundColor: '#333',
-                width: '100%',
-                justifyContent: 'space-between',
-              }}
-            >
-              <TouchableOpacity onPress={reset}>
+              {formatterTime(playerTopOrLeft.timeLeft)}
+            </Text>
+            <Text style={{ position: 'absolute', top: 15, left: 15 }}>
+              {playerTopOrLeft.steps}
+            </Text>
+          </View>
+          <View
+            style={{
+              flexDirection: 'column',
+              padding: 20,
+              backgroundColor: '#333',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          >
+            <TouchableOpacity onPress={reset}>
+              <Ionicons
+                name="reload"
+                size={32}
+                color="#c0c0c0"
+              />
+            </TouchableOpacity>
+            {ready !== 'play' && (
+              <TouchableOpacity onPress={() => setReady('play')}>
                 <Ionicons
-                  name="reload"
+                  name="play"
                   size={32}
                   color="#c0c0c0"
-                  style={{ marginLeft: 20 }}
                 />
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+            )}
+            {ready === 'play' && (
+              <TouchableOpacity onPress={() => setReady('pause')}>
                 <Ionicons
-                  name="settings"
+                  name="pause"
                   size={32}
                   color="#c0c0c0"
-                  style={{ marginRight: 20 }}
                 />
               </TouchableOpacity>
-            </View>
-            <Pressable
-              disabled={gameOver}
-              onPressIn={startplayerBottomOrRight}
-              style={{ flex: 1, width: '100%' }}
+            )}
+
+            <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+              <Ionicons
+                name="settings"
+                size={32}
+                color="#c0c0c0"
+              />
+            </TouchableOpacity>
+          </View>
+          <View
+            style={[
+              styles.touchView,
+              {
+                backgroundColor:
+                  playerBottomOrRight.timeLeft === 0
+                    ? 'red'
+                    : playerBottomOrRight.paused
+                      ? '#c0c0c0'
+                      : 'darkorange',
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.text,
+                {
+                  color: playerBottomOrRight.paused ? '#000' : '#c0c0c0',
+                },
+              ]}
             >
-              <View
-                style={[
-                  styles.touchView,
-                  {
-                    backgroundColor:
-                      playerBottomOrRight.timeLeft === 0
-                        ? 'red'
-                        : playerBottomOrRight.paused
-                          ? '#c0c0c0'
-                          : 'darkorange',
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.text,
-                    {
-                      color: playerBottomOrRight.paused ? '#000' : '#c0c0c0',
-                      position: 'absolute',
-                      left: 14
-                    },
-                  ]}
-                >
-                  {formatterTime(playerBottomOrRight.timeLeft)}
-                </Text>
-                <Text style={{ position: 'absolute', right: 15, bottom: 15 }}>
-                  {playerBottomOrRight.steps}
-                </Text>
-              </View>
-            </Pressable>
-          </>
-        ) : (
-          <>
-            <View
-              style={{
-                flexDirection: 'row',
-                padding: 25,
-                backgroundColor: '#333',
-                width: '100%',
-                justifyContent: 'space-between',
-              }}
-            >
-              <TouchableOpacity onPress={reset}>
-                <Ionicons
-                  name="reload"
-                  size={32}
-                  color="#c0c0c0"
-                  style={{ marginLeft: 20 }}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
-                <Ionicons
-                  name="settings"
-                  size={32}
-                  color="#c0c0c0"
-                  style={{ marginRight: 20 }}
-                />
-              </TouchableOpacity>
-            </View>
-            <View style={{ flexDirection: 'row', flex: 1 }}>
-              <Pressable
-                disabled={gameOver}
-                onPressIn={startPlayerTopOrLeft}
-                style={{ flex: 1, width: '100%' }}
-              >
-                <View
-                  style={[
-                    styles.touchView,
-                    {
-                      backgroundColor:
-                        playerTopOrLeft.timeLeft === 0
-                          ? 'red'
-                          : playerTopOrLeft.paused
-                            ? '#c0c0c0'
-                            : 'darkorange',
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.text,
-                      {
-                        color: playerTopOrLeft.paused ? '#000' : '#c0c0c0',
-                        position: 'absolute',
-                        left: 14
-                      },
-                    ]}
-                  >
-                    {formatterTime(playerTopOrLeft.timeLeft)}
-                  </Text>
-                  <Text style={{ position: 'absolute', right: 15, bottom: 15 }}>
-                    {playerTopOrLeft.steps}
-                  </Text>
-                </View>
-              </Pressable>
-              <Pressable
-                disabled={gameOver}
-                onPressIn={startplayerBottomOrRight}
-                style={{ flex: 1, width: '100%' }}
-              >
-                <View
-                  style={[
-                    styles.touchView,
-                    {
-                      backgroundColor:
-                        playerBottomOrRight.timeLeft === 0
-                          ? 'red'
-                          : playerBottomOrRight.paused
-                            ? '#c0c0c0'
-                            : 'darkorange',
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.text,
-                      {
-                        color: playerBottomOrRight.paused ? '#000' : '#c0c0c0',
-                        position: 'absolute',
-                        left: 14
-                      },
-                    ]}
-                  >
-                    {formatterTime(playerBottomOrRight.timeLeft)}
-                  </Text>
-                  <Text style={{ position: 'absolute', right: 15, bottom: 15 }}>
-                    {playerBottomOrRight.steps}
-                  </Text>
-                </View>
-              </Pressable>
-            </View>
-          </>
-        )}
+              {formatterTime(playerBottomOrRight.timeLeft)}
+            </Text>
+            <Text style={{ position: 'absolute', left: 15, top: 15 }}>
+              {playerBottomOrRight.steps}
+            </Text>
+          </View>
+        </View>
       </View>
-      <StatusBar style="dark" />
+      <StatusBar hidden={true} style="dark" />
     </>
   );
 }
@@ -454,11 +341,10 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: 'row',
   },
   text: {
-    fontSize: 80,
+    fontSize: 70,
     fontFamily: 'Inter_700Bold',
   },
   touchView: {
