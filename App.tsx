@@ -12,10 +12,10 @@ export type StackParamList = {
   Settings: undefined;
 };
 
-export type BulletOptions = '1+0' | '2+1';
-export type BlitzOptions = '3+0' | '3+2' | '5+0' | '5+3';
-export type RapidOptions = '10+0' | '10+5' | '15+10';
-export type ClassicalOptions = '30+0' | '30+20';
+export type BulletOptions = '1+0' | '1+1' | '2+0' | '2+1';
+export type BlitzOptions = '3+0' | '3+2' | '5+0' | '5+3' | '7+0' | '7+3';
+export type RapidOptions = '10+0' | '10+5' | '15+0' | '15+10' | '20+0' | '20+10';
+export type ClassicalOptions = '30+0' | '30+20' | '45+0' | '45+20';
 
 export type AllTypesOptions =
   | BulletOptions
@@ -36,16 +36,25 @@ export type PlayMode = {
 // Time in ms
 export const playMode: PlayMode = {
   '1+0': { timeLeft: 60000, increment: 0, type: 'Bullet' },
+  '1+1': { timeLeft: 60000, increment: 1000, type: 'Bullet' },
+  '2+0': { timeLeft: 120000, increment: 0, type: 'Bullet' },
   '2+1': { timeLeft: 120000, increment: 1000, type: 'Bullet' },
   '3+0': { timeLeft: 180000, increment: 0, type: 'Blitz' },
   '3+2': { timeLeft: 180000, increment: 2000, type: 'Blitz' },
   '5+0': { timeLeft: 300000, increment: 0, type: 'Blitz' },
   '5+3': { timeLeft: 300000, increment: 3000, type: 'Blitz' },
+  '7+0': { timeLeft: 420000, increment: 0, type: 'Blitz' },
+  '7+3': { timeLeft: 420000, increment: 3000, type: 'Blitz' },
   '10+0': { timeLeft: 600000, increment: 0, type: 'Rapid' },
   '10+5': { timeLeft: 600000, increment: 5000, type: 'Rapid' },
+  '15+0': { timeLeft: 900000, increment: 0, type: 'Rapid' },
   '15+10': { timeLeft: 900000, increment: 10000, type: 'Rapid' },
+  '20+0': { timeLeft: 1200000, increment: 0, type: 'Rapid' },
+  '20+10': { timeLeft: 1200000, increment: 10000, type: 'Rapid' },
   '30+0': { timeLeft: 1800000, increment: 0, type: 'Classical' },
   '30+20': { timeLeft: 1800000, increment: 20000, type: 'Classical' },
+  '45+0': { timeLeft: 2700000, increment: 0, type: 'Classical' },
+  '45+20': { timeLeft: 2700000, increment: 20000, type: 'Classical' },
 };
 
 type TransformPlayMode = {
