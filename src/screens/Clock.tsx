@@ -8,7 +8,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Pressable,
   TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
@@ -18,6 +17,8 @@ import { useFonts, Inter_700Bold } from '@expo-google-fonts/inter';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
 import { DeviceMotion } from 'expo-sensors';
+import * as ScreenOrientation from 'expo-screen-orientation';
+
 
 import { BaseOptions, StackParamList } from '../../App';
 
@@ -198,10 +199,11 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
 
   React.useEffect(() => {
     const listener = DeviceMotion.addListener(
-      ({ rotation }) => {
+      async ({ rotation }) => {
         // get actual rotation in degrees
         const beta = rotation?.beta || 0;
-        const rotAngle = beta * (180 / Math.PI);
+        const orientation = await ScreenOrientation.getOrientationAsync();
+        const rotAngle = orientation === 4 ? beta * (180 / Math.PI) : -beta * (180 / Math.PI);
 
         const deltaAngle = rotAngle - lastAngle;
         if (Math.abs(rotAngle - lastAngle) > minDeltaAngle) {
@@ -266,7 +268,7 @@ export default function Clock({ navigation, activeMode }: Props): JSX.Element {
               flexDirection: 'column',
               padding: 20,
               backgroundColor: '#333',
-              justifyContent: 'center',
+              justifyContent: 'space-around',
               alignItems: 'center'
             }}
           >
