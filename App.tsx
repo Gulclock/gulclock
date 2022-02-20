@@ -3,7 +3,6 @@ import React, { useEffect } from 'react';
 import { useKeepAwake } from 'expo-keep-awake';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import * as ScreenOrientation from 'expo-screen-orientation';
 
 import Clock from './src/screens/Clock';
 import Settings from './src/screens/Settings';
@@ -78,10 +77,6 @@ const listPlayMode = (arreglo: PlayMode): ListPlayMode => {
   return result;
 };
 
-async function changeScreenOrientation() {
-  await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT);
-}
-
 export default function App(): JSX.Element {
   useKeepAwake();
   const [activeMode, setActiveMode] = React.useState({
@@ -92,10 +87,6 @@ export default function App(): JSX.Element {
   const generatorOption = (type: AllTypesOptions): void => {
     setActiveMode({ playmode: playMode[type], mode: type });
   };
-
-  // useEffect(() => {
-  //   changeScreenOrientation();
-  // }, [])
 
   return (
     <NavigationContainer>
